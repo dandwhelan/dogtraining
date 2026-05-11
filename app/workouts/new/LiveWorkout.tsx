@@ -23,15 +23,28 @@ function formatDuration(seconds: number): string {
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-export function LiveWorkout({ dog, commands }: { dog: Dog; commands: DogCommandRow[] }) {
+export function LiveWorkout({
+  dog,
+  commands,
+  initialCommandId,
+}: {
+  dog: Dog;
+  commands: DogCommandRow[];
+  initialCommandId?: number;
+}) {
   const [workoutId, setWorkoutId] = useState<number | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [logged, setLogged] = useState<LoggedSet[]>([]);
   const [pending, startTransition] = useTransition();
+  const [toast, setToast] = useState<{ commandName: string; newLevel: number } | null>(null);
 
   // form state
-  const [dogCommandId, setDogCommandId] = useState<number>(commands[0]?.dog_command_id ?? 0);
+  const defaultCmd =
+    (initialCommandId && commands.some((c) => c.dog_command_id === initialCommandId)
+      ? initialCommandId
+      : commands[0]?.dog_command_id) ?? 0;
+  const [dogCommandId, setDogCommandId] = useState<number>(defaultCmd);
   const [repsAttempted, setRepsAttempted] = useState(5);
   const [repsSuccess, setRepsSuccess] = useState(5);
   const [distraction, setDistraction] = useState(0);
@@ -78,7 +91,7 @@ export function LiveWorkout({ dog, commands }: { dog: Dog; commands: DogCommandR
       distractionLevel: distraction,
     };
     startTransition(async () => {
-      await addSet({
+      const result = await addSet({
         workoutId,
         dogCommandId,
         repsAttempted,
@@ -89,6 +102,10 @@ export function LiveWorkout({ dog, commands }: { dog: Dog; commands: DogCommandR
       setRepsAttempted(5);
       setRepsSuccess(5);
       setDistraction(0);
+      if (result.leveledUp) {
+        setToast({ commandName: result.commandName, newLevel: result.newLevel });
+        setTimeout(() => setToast(null), 4000);
+      }
     });
   }
 
@@ -246,6 +263,19 @@ export function LiveWorkout({ dog, commands }: { dog: Dog; commands: DogCommandR
             ■  Finish Workout
           </button>
         </>
+      )}
+
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed inset-x-4 bottom-6 mx-auto max-w-md rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 px-5 py-4 text-amber-950 shadow-lg ring-1 ring-black/10 animate-in fade-in slide-in-from-bottom-4"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide">Level up!</p>
+          <p className="mt-0.5 text-base font-semibold">
+            {toast.commandName} reached Lv {toast.newLevel} 🏆
+          </p>
+        </div>
       )}
     </main>
   );

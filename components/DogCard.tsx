@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { DogSummary } from '@/lib/queries/dogs';
 import { Heatmap } from './Heatmap';
 import { StartWorkoutButton } from './StartWorkoutButton';
@@ -22,7 +23,12 @@ export function DogCard({ dog }: { dog: DogSummary }) {
     <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10 space-y-3">
       <div className="flex items-baseline justify-between">
         <div>
-          <h2 className="text-lg font-semibold uppercase tracking-wide">{dog.name}</h2>
+          <Link
+            href={`/dogs/${dog.id}`}
+            className="text-lg font-semibold uppercase tracking-wide hover:underline"
+          >
+            {dog.name}
+          </Link>
           {dog.breed && (
             <p className="text-sm text-neutral-500 dark:text-neutral-400">{dog.breed}</p>
           )}

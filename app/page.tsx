@@ -5,7 +5,8 @@ import { RollToTrainWidget } from '@/components/RollToTrainWidget';
 export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
-  const dogs = getDogs().map((d) => getDogSummary(d.id));
+  const allDogs = getDogs();
+  const dogs = allDogs.map((d) => getDogSummary(d.id));
   const today = new Date().toLocaleDateString(undefined, {
     weekday: 'short',
     day: 'numeric',
@@ -23,7 +24,7 @@ export default function DashboardPage() {
         <DogCard key={dog.id} dog={dog} />
       ))}
 
-      <RollToTrainWidget />
+      <RollToTrainWidget dogs={allDogs} />
     </main>
   );
 }

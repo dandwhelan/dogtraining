@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default async function NewWorkoutPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dog?: string }>;
+  searchParams: Promise<{ dog?: string; command?: string }>;
 }) {
   const params = await searchParams;
   const dogs = getDogs();
@@ -21,5 +21,6 @@ export default async function NewWorkoutPage({
     );
   }
   const commands = getDogCommands(dog.id);
-  return <LiveWorkout dog={dog} commands={commands} />;
+  const initialCommandId = Number(params.command) || undefined;
+  return <LiveWorkout dog={dog} commands={commands} initialCommandId={initialCommandId} />;
 }
