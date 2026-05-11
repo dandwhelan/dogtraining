@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getDogs, getDogSummary } from '@/lib/queries/dogs';
+import { getDogs, getDogSummary, calculateDogAge } from '@/lib/queries/dogs';
 import {
   getDogCommands,
   getUnassignedMasterCommands,
@@ -44,24 +44,105 @@ export default async function DogDetailPage({
     grouped.set(c.set_name, arr);
   }
 
+  const ageInfo = calculateDogAge(dog.birthday);
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-6 space-y-4 pb-[env(safe-area-inset-bottom)]">
-      <header className="space-y-2">
+      <header className="space-y-4">
         <Link href="/" className="text-sm text-neutral-500 hover:underline">
           ← Dashboard
         </Link>
-        <div className="flex items-baseline justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold uppercase tracking-wide">{dog.name}</h1>
-            {dog.breed && (
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">{dog.breed}</p>
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            {dog.profile_picture ? (
+              <img src={dog.profile_picture} alt={dog.name} className="h-16 w-16 rounded-full object-cover shadow-sm ring-1 ring-black/10" />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-2xl dark:bg-neutral-800">
+                🐾
+              </div>
             )}
+            <div>
+              <h1 className="text-2xl font-semibold uppercase tracking-wide">{dog.name}</h1>
+              <div className="text-sm text-neutral-500 dark:text-neutral-400">
+                {dog.breed && <span>{dog.breed}</span>}
+                {ageInfo && (
+                  <span className="ml-2">
+                    · {ageInfo.humanYears}y ({ageInfo.dogYears} dog years)
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
-            Lv {dog.level}
-          </span>
+          <div className="flex flex-col items-end gap-2">
+            <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+              Lv {dog.level}
+            </span>
+            <Link
+              href={`/dogs/${dog.id}/edit`}
+              className="text-xs text-neutral-500 hover:underline"
+            >
+              Edit Profile
+            </Link>
+          </div>
         </div>
       </header>
+
+      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10 space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+          Profile Details
+        </h2>
+        <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
+          {dog.weight && (
+            <div>
+              <span className="block text-xs text-neutral-500">Weight</span>
+              <span className="font-medium">{dog.weight}</span>
+            </div>
+          )}
+          {dog.gotcha_day && (
+            <div>
+              <span className="block text-xs text-neutral-500">Gotcha Day</span>
+              <span className="font-medium">{dog.gotcha_day}</span>
+            </div>
+          )}
+          {dog.dietary_restrictions && (
+            <div>
+              <span className="block text-xs text-neutral-500">Diet</span>
+              <span className="font-medium">{dog.dietary_restrictions}</span>
+            </div>
+          )}
+          {dog.fav_toy && (
+            <div>
+              <span className="block text-xs text-neutral-500">Fav Toy</span>
+              <span className="font-medium">{dog.fav_toy}</span>
+            </div>
+          )}
+          {dog.fav_games && (
+            <div>
+              <span className="block text-xs text-neutral-500">Fav Games</span>
+              <span className="font-medium">{dog.fav_games}</span>
+            </div>
+          )}
+          {dog.best_traits && (
+            <div>
+              <span className="block text-xs text-neutral-500">Best Traits</span>
+              <span className="font-medium">{dog.best_traits}</span>
+            </div>
+          )}
+        </div>
+        {(dog.microchip_number || dog.vet_contact || dog.medical_info) && (
+          <div className="mt-4 border-t border-neutral-100 pt-3 text-sm dark:border-neutral-800 space-y-1">
+            {dog.microchip_number && (
+              <p><span className="text-neutral-500">Microchip:</span> {dog.microchip_number}</p>
+            )}
+            {dog.vet_contact && (
+              <p><span className="text-neutral-500">Vet:</span> {dog.vet_contact}</p>
+            )}
+            {dog.medical_info && (
+              <p><span className="text-neutral-500">Medical Notes:</span> {dog.medical_info}</p>
+            )}
+          </div>
+        )}
+      </section>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10 space-y-3">
         <div className="grid grid-cols-3 gap-3 text-center">

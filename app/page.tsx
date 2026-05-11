@@ -19,7 +19,7 @@ export default function DashboardPage() {
       <header className="flex items-center justify-between pb-2">
         <h1 className="text-xl font-semibold tracking-tight">Dog Training</h1>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">{today}</span>
+          <span className="text-sm text-neutral-500 dark:text-neutral-400" suppressHydrationWarning>{today}</span>
           <Link
             href="/manage"
             className="rounded-lg bg-neutral-100 px-3 py-1 text-sm font-medium hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"

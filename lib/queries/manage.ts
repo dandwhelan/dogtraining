@@ -34,6 +34,54 @@ export async function updateDog(formData: FormData): Promise<void> {
   revalidatePath(`/dogs/${id}`);
 }
 
+export async function updateDogProfile(formData: FormData): Promise<void> {
+  const id = Number(formData.get('id'));
+  if (!id) throw new Error('Dog ID is required');
+
+  const name = normalize(String(formData.get('name') ?? ''));
+  const breed = normalize(String(formData.get('breed') ?? ''));
+  const weight = normalize(String(formData.get('weight') ?? '')) || null;
+  const dietary_restrictions = normalize(String(formData.get('dietary_restrictions') ?? '')) || null;
+  const fav_toy = normalize(String(formData.get('fav_toy') ?? '')) || null;
+  const least_fav_toy = normalize(String(formData.get('least_fav_toy') ?? '')) || null;
+  const fav_games = normalize(String(formData.get('fav_games') ?? '')) || null;
+  const least_fav_games = normalize(String(formData.get('least_fav_games') ?? '')) || null;
+  const best_traits = normalize(String(formData.get('best_traits') ?? '')) || null;
+  const worst_traits = normalize(String(formData.get('worst_traits') ?? '')) || null;
+  const birthday = normalize(String(formData.get('birthday') ?? '')) || null;
+  const gotcha_day = normalize(String(formData.get('gotcha_day') ?? '')) || null;
+  const microchip_number = normalize(String(formData.get('microchip_number') ?? '')) || null;
+  const vet_contact = normalize(String(formData.get('vet_contact') ?? '')) || null;
+  const medical_info = normalize(String(formData.get('medical_info') ?? '')) || null;
+
+  let profile_picture = formData.get('existing_profile_picture') as string | null;
+  const file = formData.get('profile_picture') as File | null;
+  
+  if (file && file.size > 0) {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    profile_picture = `data:${file.type};base64,${buffer.toString('base64')}`;
+  }
+
+  db.prepare(`
+    UPDATE dogs SET 
+      name = ?, breed = ?, weight = ?, dietary_restrictions = ?,
+      fav_toy = ?, least_fav_toy = ?, fav_games = ?, least_fav_games = ?,
+      best_traits = ?, worst_traits = ?, birthday = ?, gotcha_day = ?,
+      microchip_number = ?, vet_contact = ?, medical_info = ?, profile_picture = ?
+    WHERE id = ?
+  `).run(
+    name, breed, weight, dietary_restrictions,
+    fav_toy, least_fav_toy, fav_games, least_fav_games,
+    best_traits, worst_traits, birthday, gotcha_day,
+    microchip_number, vet_contact, medical_info, profile_picture, id
+  );
+
+  revalidatePath('/');
+  revalidatePath('/manage');
+  revalidatePath(`/dogs/${id}`);
+}
+
 export async function deleteDog(formData: FormData): Promise<void> {
   const id = Number(formData.get('id'));
   if (!id) throw new Error('Missing id');

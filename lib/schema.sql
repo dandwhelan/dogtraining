@@ -5,7 +5,21 @@ CREATE TABLE IF NOT EXISTS dogs (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   name        TEXT NOT NULL UNIQUE,
   breed       TEXT,
-  created_at  INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+  created_at            INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+  weight                TEXT,
+  dietary_restrictions  TEXT,
+  fav_toy               TEXT,
+  least_fav_toy         TEXT,
+  fav_games             TEXT,
+  least_fav_games       TEXT,
+  best_traits           TEXT,
+  worst_traits          TEXT,
+  birthday              TEXT,
+  gotcha_day            TEXT,
+  microchip_number      TEXT,
+  vet_contact           TEXT,
+  medical_info          TEXT,
+  profile_picture       TEXT
 );
 
 CREATE TABLE IF NOT EXISTS master_sets (

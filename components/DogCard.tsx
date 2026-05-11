@@ -22,16 +22,25 @@ export function DogCard({ dog }: { dog: DogSummary }) {
   return (
     <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10 space-y-3">
       <div className="flex items-baseline justify-between">
-        <div>
-          <Link
-            href={`/dogs/${dog.id}`}
-            className="text-lg font-semibold uppercase tracking-wide hover:underline"
-          >
-            {dog.name}
-          </Link>
-          {dog.breed && (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">{dog.breed}</p>
+        <div className="flex items-center gap-3">
+          {dog.profile_picture ? (
+            <img src={dog.profile_picture} alt="" className="h-10 w-10 rounded-full object-cover shadow-sm ring-1 ring-black/10" />
+          ) : (
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-lg dark:bg-neutral-800">
+              🐾
+            </div>
           )}
+          <div>
+            <Link
+              href={`/dogs/${dog.id}`}
+              className="text-lg font-semibold uppercase tracking-wide hover:underline"
+            >
+              {dog.name}
+            </Link>
+            {dog.breed && (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">{dog.breed}</p>
+            )}
+          </div>
         </div>
         <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
           Lv {dog.level}

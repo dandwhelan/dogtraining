@@ -70,7 +70,9 @@ export function LiveWorkout({
   async function handleStart() {
     const id = await startWorkout(dog.id);
     setWorkoutId(id);
-    setStartedAt(Date.now());
+    const currentTime = Date.now();
+    setStartedAt(currentTime);
+    setNow(currentTime);
   }
 
   function handleAddSet(e: React.FormEvent) {
