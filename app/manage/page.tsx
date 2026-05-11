@@ -35,7 +35,7 @@ export default function ManagePage() {
           Dogs
         </h2>
 
-        <form action={createDog} className="grid grid-cols-[1fr_1fr_auto] gap-2">
+        <form action={createDog} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 sm:gap-3">
           <input
             name="name"
             required
@@ -61,12 +61,12 @@ export default function ManagePage() {
           <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
             {dogs.map((d) => (
               <li key={d.id} className="flex items-center justify-between py-2">
-                <div>
-                  <Link href={`/dogs/${d.id}`} className="font-medium hover:underline">
+                <div className="min-w-0 flex-1 pr-4">
+                  <Link href={`/dogs/${d.id}`} className="block truncate font-medium hover:underline">
                     {d.name}
                   </Link>
                   {d.breed && (
-                    <span className="ml-2 text-sm text-neutral-500">{d.breed}</span>
+                    <span className="block truncate text-sm text-neutral-500">{d.breed}</span>
                   )}
                 </div>
                 <form action={deleteDog}>
@@ -93,7 +93,7 @@ export default function ManagePage() {
           Categories like &ldquo;Obedience&rdquo;, &ldquo;Scentwork&rdquo;, &ldquo;Canicross&rdquo;.
         </p>
 
-        <form action={createMasterSet} className="grid grid-cols-[1fr_auto] gap-2">
+        <form action={createMasterSet} className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 sm:gap-3">
           <input
             name="set_name"
             required
@@ -114,7 +114,7 @@ export default function ManagePage() {
           <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
             {sets.map((s) => (
               <li key={s.id} className="flex items-center justify-between py-2">
-                <span className="font-medium">{s.set_name}</span>
+                <span className="min-w-0 flex-1 pr-4 truncate font-medium">{s.set_name}</span>
                 <form action={deleteMasterSet}>
                   <input type="hidden" name="id" value={s.id} />
                   <button
@@ -142,7 +142,7 @@ export default function ManagePage() {
         {sets.length === 0 ? (
           <p className="text-sm text-neutral-500">Create a master set first.</p>
         ) : (
-          <form action={createMasterCommand} className="grid grid-cols-[1fr_1fr_auto] gap-2">
+          <form action={createMasterCommand} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 sm:gap-3">
             <select
               name="set_id"
               required
@@ -179,11 +179,11 @@ export default function ManagePage() {
           <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
             {commands.map((c) => (
               <li key={c.id} className="flex items-center justify-between py-2">
-                <span>
-                  <span className="text-xs uppercase tracking-wide text-neutral-500">
+                <span className="min-w-0 flex-1 pr-4">
+                  <span className="block truncate text-xs uppercase tracking-wide text-neutral-500">
                     {c.set_name}
                   </span>
-                  <span className="ml-2 font-medium">{c.default_name}</span>
+                  <span className="block truncate font-medium">{c.default_name}</span>
                 </span>
                 <form action={deleteMasterCommand}>
                   <input type="hidden" name="id" value={c.id} />
