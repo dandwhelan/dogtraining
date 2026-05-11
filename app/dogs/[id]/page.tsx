@@ -1,7 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getDogs, getDogSummary } from '@/lib/queries/dogs';
-import { getDogCommands } from '@/lib/queries/commands';
+import {
+  getDogCommands,
+  getUnassignedMasterCommands,
+} from '@/lib/queries/commands';
+import {
+  assignCommandToDog,
+  unassignDogCommand,
+} from '@/lib/queries/manage';
 import { levelFor, nextLevelThreshold, accuracy } from '@/lib/leveling';
 import { Heatmap } from '@/components/Heatmap';
 import { StartWorkoutButton } from '@/components/StartWorkoutButton';
@@ -29,6 +36,7 @@ export default async function DogDetailPage({
 
   const dog = getDogSummary(dogId);
   const commands = getDogCommands(dogId);
+  const unassigned = getUnassignedMasterCommands(dogId);
   const grouped = new Map<string, typeof commands>();
   for (const c of commands) {
     const arr = grouped.get(c.set_name) ?? [];
@@ -76,47 +84,133 @@ export default async function DogDetailPage({
         <StartWorkoutButton dogId={dog.id} />
       </section>
 
-      {[...grouped.entries()].map(([setName, items]) => (
-        <section
-          key={setName}
-          className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10"
-        >
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            {setName}
-          </h2>
-          <ul className="mt-3 divide-y divide-neutral-200 dark:divide-neutral-800">
-            {items.map((c) => {
-              const lvl = levelFor(c.total_successes);
-              const next = nextLevelThreshold(c.total_successes);
-              const acc = accuracy(c.total_successes, c.total_attempted);
-              const pct = Math.min(100, Math.round((c.total_successes / next) * 100));
-              return (
-                <li key={c.dog_command_id} className="py-3 space-y-1.5">
-                  <div className="flex items-baseline justify-between">
-                    <span className="font-medium">{c.custom_cue ?? c.command_name}</span>
-                    <span className="text-xs text-neutral-500">
-                      Lv {lvl} · {c.total_successes}/{next} XP
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
-                    <div
-                      className="h-full rounded-full bg-emerald-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-neutral-500">
-                    {c.total_attempted > 0
-                      ? `${Math.round(acc * 100)}% accuracy (${c.total_successes}/${c.total_attempted})`
-                      : 'No reps logged'}
-                    {' · last '}
-                    {relTime(c.last_trained_date)}
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
+      {/* ASSIGN COMMAND */}
+      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10 space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+          Assign a command
+        </h2>
+        {unassigned.length === 0 ? (
+          <p className="text-sm text-neutral-500">
+            {commands.length === 0 ? (
+              <>
+                No master commands exist yet.{' '}
+                <Link href="/manage" className="text-emerald-600 hover:underline dark:text-emerald-400">
+                  Create some in Manage
+                </Link>
+                .
+              </>
+            ) : (
+              <>Every master command is already assigned to this dog.</>
+            )}
+          </p>
+        ) : (
+          <form action={assignCommandToDog} className="space-y-2">
+            <input type="hidden" name="dog_id" value={dog.id} />
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+              <select
+                name="command_id"
+                required
+                defaultValue=""
+                className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <option value="" disabled>
+                  Master command…
+                </option>
+                {unassigned.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.set_name} · {c.default_name}
+                  </option>
+                ))}
+              </select>
+              <input
+                name="custom_cue"
+                placeholder="Custom cue (optional, e.g. “Here”)"
+                className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-800"
+              />
+              <button
+                type="submit"
+                className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+              >
+                Assign
+              </button>
+            </div>
+            <p className="text-xs text-neutral-500">
+              Starts at Lv 1 with 0/0 reps. The custom cue is what you&apos;ll see in
+              workouts.
+            </p>
+          </form>
+        )}
+      </section>
+
+      {commands.length === 0 ? (
+        <section className="rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10">
+          <p className="text-sm text-neutral-500">
+            No commands assigned yet. Use the form above to start tracking.
+          </p>
         </section>
-      ))}
+      ) : (
+        [...grouped.entries()].map(([setName, items]) => (
+          <section
+            key={setName}
+            className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10"
+          >
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+              {setName}
+            </h2>
+            <ul className="mt-3 divide-y divide-neutral-200 dark:divide-neutral-800">
+              {items.map((c) => {
+                const lvl = levelFor(c.total_successes);
+                const next = nextLevelThreshold(c.total_successes);
+                const acc = accuracy(c.total_successes, c.total_attempted);
+                const pct = Math.min(100, Math.round((c.total_successes / next) * 100));
+                return (
+                  <li key={c.dog_command_id} className="py-3 space-y-1.5">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="font-medium">
+                        {c.custom_cue ?? c.command_name}
+                        {c.custom_cue && (
+                          <span className="ml-2 text-xs font-normal text-neutral-500">
+                            ({c.command_name})
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex items-center gap-3 text-xs text-neutral-500">
+                        <span>
+                          Lv {lvl} · {c.total_successes}/{next} XP
+                        </span>
+                        <form action={unassignDogCommand}>
+                          <input type="hidden" name="id" value={c.dog_command_id} />
+                          <input type="hidden" name="dog_id" value={dog.id} />
+                          <button
+                            type="submit"
+                            className="text-red-600 hover:underline dark:text-red-400"
+                            title="Unassign this command"
+                          >
+                            remove
+                          </button>
+                        </form>
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+                      <div
+                        className="h-full rounded-full bg-emerald-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-neutral-500">
+                      {c.total_attempted > 0
+                        ? `${Math.round(acc * 100)}% accuracy (${c.total_successes}/${c.total_attempted})`
+                        : 'No reps logged'}
+                      {' · last '}
+                      {relTime(c.last_trained_date)}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))
+      )}
     </main>
   );
 }
